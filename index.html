@@ -49,7 +49,7 @@ Elevator.prototype.add_person = function(person) {
             return false;
         }
     }
-    
+
     this.people.push(person);
     return true;
 };
@@ -94,7 +94,7 @@ Elevator.prototype.decide = function() {
 var Building = function() {
     var num_floors = Config.num_floors;
     var elevator_system = new Elevator_system();
-    
+
     Building.prototype.get_num_floors = function() {
         return num_floors;
     };
@@ -106,15 +106,15 @@ var Building = function() {
 var Elevator_system = function() {
     var num_elevators = Config.num_elevators;
     var elevators = [];
-    
+
     for(var i = 0;i < num_elevators;i++) {
         elevators.push(new Elevator());
     }
-    
+
     Elevator_system.prototype.get_elevators = function() {
         return elevators;
     };
-    
+
     Elevator_system.prototype.get_num_elevators = function() {
         return num_elevators;
     };
@@ -128,12 +128,12 @@ var Person = function(properties) {
     this.get_wait_time_in_elevator = function() {
         return wait_time_in_elevator;
     };
-    
+
     var wait_time_out_elevator = 0;
     this.get_wait_time_out_elevator = function() {
         return wait_time_out_elevator;
     };
-    
+
     this.do_get_on = function(elevator_direction) {
         return true;
     };
@@ -161,14 +161,14 @@ Person.prototype.wait_out_elevator = function() {
 
 var Simulator = (function() {
     var instance;
-    
+
     var stats = {
         total_people_wait_time_in_elevator:0,
         total_people_wait_time_out_elevator:0,
         total_delivered_people:0,
         total_elevator_traveled_distance:0
     };
-    
+
     var building;
     var requests = [];
     var time_counter = 0;
@@ -177,7 +177,7 @@ var Simulator = (function() {
     var people_by_floor = {};
     var people_got_off_by_floor = {};
     var end_simulation_callback;
-    
+
     var Simulator_object = function(properties) {
         var graphic = properties.graphic;
         Simulator_object.prototype.reset = function() {
@@ -185,14 +185,14 @@ var Simulator = (function() {
             stats.total_people_wait_time_out_elevator = 0;
             stats.total_delivered_people = 0;
             stats.total_elevator_traveled_distance = 0;
-            
+
             building = new Building();
         };
-        
+
         Simulator_object.prototype.get_stats = function() {
             return stats;
         }
-        
+
         var add_person = function(person) {
             people.push(person);
             if(!people_by_floor['f' + person.at_floor]) {
@@ -200,7 +200,7 @@ var Simulator = (function() {
             }
             people_by_floor['f' + person.at_floor].push(person);
         };
-        
+
         var remove_person = function(person) {
             var found1 = false;
             for(var i = 0;i < people.length;i++) {
@@ -220,33 +220,33 @@ var Simulator = (function() {
             }
             return found1 && found2;
         };
-        
+
         var get_people_at_floor = function(floor) {
             return people_by_floor['f' + floor];
         };
-        
+
         var clear_people_got_off = function(floor) {
             people_got_off_by_floor['f' + floor] = [];
         };
-        
+
         var add_person_got_off = function(person) {
             if(!people_got_off_by_floor['f' + person.get_destination_floor()]) {
                 people_got_off_by_floor['f' + person.get_destination_floor()] = [];
             }
             people_got_off_by_floor['f' + person.get_destination_floor()].push(person);
         };
-        
+
         var iterate = function() {
             console_log('time:' + time_counter);
             var elevator_system = building.get_elevator_system();
             var elevators = elevator_system.get_elevators();
-            
+
             if(time_counter > Config.simulation_time) {
                 clearInterval(timer_id);
                 end_simulation_callback();
                 return;
             }
-            
+
             for(var i = 0;i < building.get_num_floors();i++) {
                 var people_at_floor = get_people_at_floor(i + 1);
                 if(people_at_floor && people_at_floor.length > 0) {
@@ -256,7 +256,7 @@ var Simulator = (function() {
                     }
                 }
             }
-            
+
             if(time_counter > Config.start_delay_s) {
                 if(Math.random() < Config.person_spawn_rate) {
                     var person_at_floor = Math.floor(Math.random() * building.get_num_floors()) + 1;
@@ -279,7 +279,7 @@ var Simulator = (function() {
                     }
                 }
             }
-            
+
             for(var i = 0;i < elevators.length;i++) {
                 var elevator = elevators[i];
                 var elevator_direction;
@@ -290,13 +290,13 @@ var Simulator = (function() {
                 } else if(elevator.get_position() > ((elevator.get_destination_floor() - 1) * elevator.get_height())) {
                     elevator_direction = Elevator.DIRECTION_DOWN;
                 }
-                
+
                 var elevator_people = elevator.get_people();
                 for(var j = 0;j < elevator_people.length;j++) {
                     elevator_people[j].wait_in_elevator();
                     stats.total_people_wait_time_in_elevator++;
                 }
-                
+
                 if(elevator.need_to_wait_s > 0) {
                     console_log('action elevator #' + i + ':wait');
                     if(elevator.at_floor()) {
@@ -310,7 +310,7 @@ var Simulator = (function() {
                                 j--;
                             }
                         }
-                        
+
                         if(temp_spliced.length > 0) {
                             clear_people_got_off(elevator.at_floor());
                             for(var j = 0;j < temp_spliced.length;j++) {
@@ -318,7 +318,7 @@ var Simulator = (function() {
                                 stats.total_delivered_people++;
                             }
                         }
-                        
+
                         var people_at_floor = get_people_at_floor(elevator.at_floor());
                         if(people_at_floor && people_at_floor.length > 0) {
                             for(var j = 0;j < people_at_floor.length;j++) {
@@ -360,33 +360,33 @@ var Simulator = (function() {
                     }
                 }
             }
-            
+
             graphic.draw(building,elevators,people_by_floor,people_got_off_by_floor,requests);
-            
+
             time_counter++;
         };
-        
+
         Simulator_object.prototype.get_time_counter = function() {
             return time_counter;
         };
-        
+
         Simulator_object.prototype.get_requests = function() {
             return requests;
         };
-        
+
         Simulator_object.prototype.get_building = function() {
             return building;
         };
-        
+
         var INTERVAL_DELAY_MS = Config.simulation_delay_ms;
         var timer_id;
-        
+
         Simulator_object.prototype.start = function(_end_simulation_callback) {
             var elevator_system = building.get_elevator_system();
             elevator_system.get_requests = function() {
                 return requests;
             };
-            
+
             var elevators = elevator_system.get_elevators();
             for(var i = 0;i < elevators.length;i++) {
                 elevator_positions[i] = 0;
@@ -396,16 +396,16 @@ var Simulator = (function() {
                     };
                 })(i);
             }
-            
+
             end_simulation_callback = _end_simulation_callback;
-            
+
             time_counter = 0;
             timer_id = setInterval(iterate,INTERVAL_DELAY_MS);
-            
+
             graphic.draw(building,elevators,people_by_floor,people_got_off_by_floor,requests);
         };
     };
-    
+
     return {
         get_instance:function(properties) {
             if(!instance) {
@@ -421,7 +421,7 @@ var Graphic = (function() {
     var canvas;
     var context;
     var padding = 20;
-    
+
     var Graphic_object = function(properties) {
         this.view_element = properties.view_element;
         canvas = $('<canvas>').css({float:'left'});
@@ -429,20 +429,20 @@ var Graphic = (function() {
         canvas = canvas.get(0);
         context = canvas.getContext('2d');
     };
-    
+
     Graphic_object.prototype.draw = function(building,elevators,people_by_floor,people_got_off_by_floor,requests) {
         context.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         var num_floors = building.get_num_floors();
         var elevator_system = building.get_elevator_system();
         var elevators = elevator_system.get_elevators();
-        
+
         var elevator_height_px = Config.scale_m_px * Config.elevator_height_m;
         var building_width_px = (Config.elevator_width_px + (2 * Config.elevator_gap_px)) * elevators.length;
         var building_height_px = elevator_height_px * num_floors;
         context.fillStyle = "#ccc";
         context.fillRect(padding, padding, building_width_px, building_height_px);
-        
+
         var font_size = (Config.elevator_height_m * Config.scale_m_px * .8);
         context.fillStyle = "#000";
         context.font = font_size + "px Calibri";
@@ -450,7 +450,7 @@ var Graphic = (function() {
             'Queue: ' + JSON.stringify(requests),
             0,
             font_size);
-        
+
         for(var i = 0;i < num_floors - 1;i++) {
             var y = padding + (i + 1) * Config.elevator_height_m * Config.scale_m_px;
             context.beginPath();
@@ -459,7 +459,7 @@ var Graphic = (function() {
             context.strokeStyle = "#888";
             context.stroke();
         }
-        
+
         for(var i = 0;i < elevators.length;i++) {
             var elevator = elevators[i];
             console_log('elevator #' + i + ' ' + JSON.stringify({at_floor:elevators[i].at_floor(),position:elevators[i].get_position(),destination_floor:elevators[i].get_destination_floor()}));
@@ -476,21 +476,21 @@ var Graphic = (function() {
                 zero_pad(elevator.get_destination_floor(),(num_floors + '').length),
                 padding + i * (Config.elevator_width_px + 2 * Config.elevator_gap_px) + Config.elevator_gap_px + 1,
                 padding + building_height_px - Config.scale_m_px * elevator.get_position() - elevator_height_px - 2);
-            
+
             context.fillStyle = "#fff";
             context.fillText(
                 zero_pad(elevator.get_people().length,(num_floors + '').length),
                 padding + i * (Config.elevator_width_px + 2 * Config.elevator_gap_px) + Config.elevator_gap_px + 1,
                 padding + building_height_px - Config.scale_m_px * elevator.get_position() - elevator_height_px + font_size);
         }
-        
+
         var person_height_px = Math.floor(elevator_height_px * .8);
         for(var i = 0;i < num_floors;i++) {
             var y = padding + building_height_px - i * Config.elevator_height_m * Config.scale_m_px - 2;
             context.fillStyle = "#000";
             context.font = (Config.elevator_height_m * Config.scale_m_px * .8) + "px Calibri";
             context.fillText(zero_pad(i + 1,(num_floors + '').length),0,y);
-            
+
             if(people_by_floor['f' + (i + 1)] && people_by_floor['f' + (i + 1)].length > 0) {
                 for(var j = 0;j < people_by_floor['f' + (i + 1)].length;j++) {
                     context.fillStyle = "#000";
@@ -501,7 +501,7 @@ var Graphic = (function() {
                         person_height_px);
                 }
             }
-            
+
             if(people_got_off_by_floor['f' + (i + 1)] && people_got_off_by_floor['f' + (i + 1)].length > 0) {
                 var x_offset = 2 * padding + building_width_px + (people_by_floor['f' + (i + 1)] ? people_by_floor['f' + (i + 1)].length : 0) * (Config.person_width_px + Config.person_gap_px);
                 for(var j = 0;j < people_got_off_by_floor['f' + (i + 1)].length;j++) {
@@ -515,7 +515,7 @@ var Graphic = (function() {
             }
         }
     };
-    
+
     return {
         get_instance:function(properties) {
             if(!instance) {
@@ -543,7 +543,7 @@ var console_log = function(s) {
 
 var Config = {
     debug:false,
-    num_floors:30,
+    num_floors:10,
     num_elevators:4,
     elevator_height_m:2,
     start_delay_s:60,
