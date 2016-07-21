@@ -53,6 +53,7 @@ Elevator.prototype.decide = function() {
     var people = this.get_people();
     var person = people.length > 0 ? people[0] : undefined;
 
+    var currentDirection = true;
 
     if(elevator) {
         elevator.at_floor();
@@ -70,11 +71,10 @@ Elevator.prototype.decide = function() {
         return b - a;
     });
     //ambil destinasi penumpang yang ingin naik ke lantai yang paling atas
-    var destination = destPeople.length > 0 ?destPeople[0]: undefined;
+    var destination = destPeople.length > 0 ? destPeople[0]: undefined;
 
     if(destination) {
 
-        var destination = destPeople[0];
         //kalau lift lagi mau ke atas
         if(destination > elevator.at_floor()) {
 
